@@ -13,19 +13,18 @@
       "matchStrings": [
         "(?<currentValue>[0-9.]+)"
       ],
-      "depNameTemplate": "TODO_DEP_NAME",
-      "datasourceTemplate": "TODO_DATASOURCE",
+      "depNameTemplate": "@anthropic-ai/claude-code",
+      "datasourceTemplate": "npm",
       "versioningTemplate": "semver"
     }
   ],
   "baseBranchPatterns": [
-    "TODO_BRANCH"
+    "latest"
   ],
   "packageRules": [
     {
-      "matchPackageNames": ["TODO_DEP_NAME"],
-      "matchBaseBranches": ["TODO_BRANCH"],
-      "allowedVersions": "/^TODO_VERSION_PREFIX\\./"
+      "matchPackageNames": ["@anthropic-ai/claude-code"],
+      "matchBaseBranches": ["latest"]
     }
   ]
 }

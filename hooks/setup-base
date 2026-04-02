@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+
+cat <<EOF >/etc/profile.d/claude-code.sh
+export PATH="${SDK}/bin:${SDK}/usr/bin:\$PATH"
+
+# Wrapper function to add default system prompt
+claude() {
+    command claude --append-system-prompt "Follow guidance in ~/.claude/.workshop-prompt.md" "\$@"
+}
+export -f claude
+EOF

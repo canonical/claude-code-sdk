@@ -1,0 +1,39 @@
+name: claude-code
+title: Claude Code SDK
+adopt-info: claude-code
+summary: Claude Code CLI
+description: |
+  This SDK provides the Claude Code CLI for AI-assisted coding within a
+  workshop. The agent is sandboxed in the workshop container. Credentials are
+  persisted between workshop updates.
+license: https://www.anthropic.com/legal/commercial-terms
+build-base: ubuntu@24.04
+platforms:
+  amd64:
+    build-on: [amd64]
+    build-for: [amd64]
+
+plugs:
+  claude-config:
+    interface: mount
+    workshop-target: /home/workshop/.claude
+
+parts:
+  claude-code:
+    plugin: npm
+    source: .
+    npm-include-node: true
+    npm-node-version: 22.22.1
+    build-environment:
+      - AUTHORIZED: "true"
+    override-pull: |
+      VERSION=$(cat "$CRAFT_PROJECT_DIR/VERSION")
+      craftctl set version="$VERSION"
+      curl -fLO "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-${VERSION}.tgz"
+      tar -xzf "claude-code-${VERSION}.tgz" --strip-components=1 -C "$CRAFT_PART_SRC"
+      rm "claude-code-${VERSION}.tgz"
+
+  workshop-prompt:
+    plugin: dump
+    source: workshop-prompt.md
+    source-type: file

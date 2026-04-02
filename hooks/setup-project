@@ -1,0 +1,11 @@
+#!/usr/bin/bash
+
+mkdir -p /home/workshop/.claude
+
+# Conditionally write .workshop-prompt.md — do not overwrite if user already has one
+if [[ ! -f "/home/workshop/.claude/.workshop-prompt.md" ]]; then
+    cp "${SDK}/workshop-prompt.md" "/home/workshop/.claude/.workshop-prompt.md"
+elif ! grep -Fq "$(head -1 "${SDK}/workshop-prompt.md")" "/home/workshop/.claude/.workshop-prompt.md"; then
+    printf '\n' >> "/home/workshop/.claude/.workshop-prompt.md"
+    cat "${SDK}/workshop-prompt.md" >> "/home/workshop/.claude/.workshop-prompt.md"
+fi
