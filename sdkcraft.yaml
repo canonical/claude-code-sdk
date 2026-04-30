@@ -20,18 +20,44 @@ plugs:
 
 parts:
   claude-code:
-    plugin: npm
-    source: .
-    npm-include-node: true
-    npm-node-version: 22.22.1
-    build-environment:
-      - AUTHORIZED: "true"
+    plugin: nil
+    build-packages:
+      - curl
+      - ca-certificates
+      - jq
     override-pull: |
-      VERSION=$(cat "$CRAFT_PROJECT_DIR/VERSION")
+      VERSION="$(cat "$CRAFT_PROJECT_DIR/VERSION")"
       craftctl set version="$VERSION"
-      curl -fLO "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-${VERSION}.tgz"
-      tar -xzf "claude-code-${VERSION}.tgz" --strip-components=1 -C "$CRAFT_PART_SRC"
-      rm "claude-code-${VERSION}.tgz"
+      DOWNLOAD_BASE_URL="https://downloads.claude.ai/claude-code-releases"
+      PLATFORM="linux-x64"
+
+      echo "Fetching manifest for version ${VERSION}, platform ${PLATFORM}..."
+      MANIFEST="$(curl -fsSL "${DOWNLOAD_BASE_URL}/${VERSION}/manifest.json")"
+
+      CHECKSUM="$(echo "$MANIFEST" | jq -r ".platforms[\"${PLATFORM}\"].checksum")"
+
+      if ! echo "$CHECKSUM" | grep -qE '^[a-f0-9]{64}$'; then
+        echo "Invalid or missing checksum for platform ${PLATFORM}" >&2
+        exit 1
+      fi
+
+      echo "Downloading ${DOWNLOAD_BASE_URL}/${VERSION}/${PLATFORM}/claude..."
+      curl -fsSL -o "$CRAFT_PART_SRC/claude" "${DOWNLOAD_BASE_URL}/${VERSION}/${PLATFORM}/claude"
+
+      ACTUAL="$(sha256sum "$CRAFT_PART_SRC/claude" | cut -d' ' -f1)"
+      if [ "$ACTUAL" != "$CHECKSUM" ]; then
+        echo "Checksum mismatch!" >&2
+        echo "  expected: $CHECKSUM" >&2
+        echo "  actual:   $ACTUAL" >&2
+        rm -f "$CRAFT_PART_SRC/claude"
+        exit 1
+      fi
+
+      chmod 755 $CRAFT_PART_SRC/claude
+
+      echo "Checksum OK."
+    override-build: |
+      install -Dm755 "$CRAFT_PART_SRC/claude" "$CRAFT_PRIME/bin/claude"
 
   workshop-prompt:
     plugin: dump
