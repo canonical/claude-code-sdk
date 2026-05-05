@@ -9,13 +9,16 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^VERSION$/"],
+      "managerFilePatterns": [
+        "/^VERSION$/"
+      ],
       "matchStrings": [
         "(?<currentValue>[0-9.]+)"
       ],
-      "depNameTemplate": "@anthropic-ai/claude-code",
-      "datasourceTemplate": "npm",
-      "versioningTemplate": "semver"
+      "depNameTemplate": "anthropics/claude-code",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": "^v?(?<version>.+)$"
     }
   ],
   "baseBranchPatterns": [
@@ -23,8 +26,12 @@
   ],
   "packageRules": [
     {
-      "matchPackageNames": ["@anthropic-ai/claude-code"],
-      "matchBaseBranches": ["latest"]
+      "matchPackageNames": [
+        "anthropics/claude-code"
+      ],
+      "matchBaseBranches": [
+        "latest"
+      ]
     }
   ]
 }
