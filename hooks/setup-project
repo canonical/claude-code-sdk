@@ -2,9 +2,13 @@
 
 mkdir -p /home/workshop/.claude
 
-# Install the SDK's workshop prompt only on first run. Once .workshop-prompt.md
-# exists — whether unchanged from the SDK or user-customised — refreshes leave
-# it alone. To pull in an updated SDK prompt, delete the file and refresh.
-if [[ ! -f "/home/workshop/.claude/.workshop-prompt.md" ]]; then
-    cp "${SDK}/workshop-prompt.md" "/home/workshop/.claude/.workshop-prompt.md"
+# Install the SDK's CLAUDE.md only on first run. Once it exists — whether
+# unchanged from the SDK or user-customised — refreshes leave it alone.
+# To pull in an updated SDK prompt, delete the file and run `workshop refresh`.
+#
+# Claude Code reads ~/.claude/CLAUDE.md natively as global user memory on
+# every invocation (see code.claude.com/docs/en/memory), so no wrapper or
+# --append-system-prompt flag is needed.
+if [[ ! -f "/home/workshop/.claude/CLAUDE.md" ]]; then
+    cp "${SDK}/workshop-prompt.md" "/home/workshop/.claude/CLAUDE.md"
 fi
