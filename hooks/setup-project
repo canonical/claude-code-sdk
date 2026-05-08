@@ -2,10 +2,9 @@
 
 mkdir -p /home/workshop/.claude
 
-# Conditionally write .workshop-prompt.md — do not overwrite if user already has one
+# Install the SDK's workshop prompt only on first run. Once .workshop-prompt.md
+# exists — whether unchanged from the SDK or user-customised — refreshes leave
+# it alone. To pull in an updated SDK prompt, delete the file and refresh.
 if [[ ! -f "/home/workshop/.claude/.workshop-prompt.md" ]]; then
     cp "${SDK}/workshop-prompt.md" "/home/workshop/.claude/.workshop-prompt.md"
-elif ! grep -Fq "$(head -1 "${SDK}/workshop-prompt.md")" "/home/workshop/.claude/.workshop-prompt.md"; then
-    printf '\n' >> "/home/workshop/.claude/.workshop-prompt.md"
-    cat "${SDK}/workshop-prompt.md" >> "/home/workshop/.claude/.workshop-prompt.md"
 fi
