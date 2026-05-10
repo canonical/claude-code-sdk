@@ -1,6 +1,4 @@
-#!/usr/bin/bash
-
-mkdir -p /home/workshop/.claude
+mkdir -p "$HOME/.claude"
 
 # Install the SDK's CLAUDE.md only on first run. Once it exists — whether
 # unchanged from the SDK or user-customised — refreshes leave it alone.
@@ -9,6 +7,6 @@ mkdir -p /home/workshop/.claude
 # Claude Code reads ~/.claude/CLAUDE.md natively as global user memory on
 # every invocation (see code.claude.com/docs/en/memory), so no wrapper or
 # --append-system-prompt flag is needed.
-if [[ ! -f "/home/workshop/.claude/CLAUDE.md" ]]; then
-    cp "${SDK}/workshop-prompt.md" "/home/workshop/.claude/CLAUDE.md"
+if [[ ! -f "$HOME/.claude/CLAUDE.md" ]]; then
+    install -m644 "${SDK}/workshop-prompt.md" "$HOME/.claude/CLAUDE.md"
 fi

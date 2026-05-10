@@ -1,12 +1,8 @@
-#!/usr/bin/bash
-
 if [[ ! -f "${SDK}/bin/claude" ]]; then
   workshopctl set-health --code="claude-not-installed" error "Claude Code not installed."
   exit 0
 fi
 
-# Optional: Check if it's on the PATH for the workshop user (like opencode does)
-# This confirms setup-base worked and the user environment is correct.
 if ! sudo -u workshop --login which claude >/dev/null 2>&1; then
   workshopctl set-health --code="claude-not-on-path" error "Claude Code not available on the \$PATH."
   exit 0

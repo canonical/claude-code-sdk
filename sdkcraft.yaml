@@ -10,8 +10,7 @@ license: https://www.anthropic.com/legal/commercial-terms
 build-base: ubuntu@24.04
 platforms:
   amd64:
-    build-on: [amd64]
-    build-for: [amd64]
+  arm64:
 
 plugs:
   claude-config:
@@ -24,25 +23,25 @@ parts:
     build-packages:
       - curl
       - ca-certificates
-      - jq
     override-pull: |
       VERSION="$(cat "$CRAFT_PROJECT_DIR/VERSION")"
       craftctl set version="$VERSION"
-      DOWNLOAD_BASE_URL="https://downloads.claude.ai/claude-code-releases"
-      PLATFORM="linux-x64"
 
-      echo "Fetching manifest for version ${VERSION}, platform ${PLATFORM}..."
-      MANIFEST="$(curl -fsSL "${DOWNLOAD_BASE_URL}/${VERSION}/manifest.json")"
+      case "${CRAFT_ARCH_BUILD_FOR}" in
+        amd64) PLATFORM=linux-x64   ;;
+        arm64) PLATFORM=linux-arm64 ;;
+        *) echo "Unsupported arch: ${CRAFT_ARCH_BUILD_FOR}" >&2; exit 1 ;;
+      esac
+      DOWNLOAD_URL="https://downloads.claude.ai/claude-code-releases/${VERSION}/${PLATFORM}/claude"
 
-      CHECKSUM="$(echo "$MANIFEST" | jq -r ".platforms[\"${PLATFORM}\"].checksum")"
-
+      CHECKSUM="$(awk -v key="$PLATFORM" '$2 == key {print $1}' "$CRAFT_PROJECT_DIR/CHECKSUMS")"
       if ! echo "$CHECKSUM" | grep -qE '^[a-f0-9]{64}$'; then
-        echo "Invalid or missing checksum for platform ${PLATFORM}" >&2
+        echo "Invalid or missing checksum for ${PLATFORM} in CHECKSUMS" >&2
         exit 1
       fi
 
-      echo "Downloading ${DOWNLOAD_BASE_URL}/${VERSION}/${PLATFORM}/claude..."
-      curl -fsSL -o "$CRAFT_PART_SRC/claude" "${DOWNLOAD_BASE_URL}/${VERSION}/${PLATFORM}/claude"
+      echo "Downloading ${DOWNLOAD_URL}..."
+      curl -fsSL -o "$CRAFT_PART_SRC/claude" "${DOWNLOAD_URL}"
 
       ACTUAL="$(sha256sum "$CRAFT_PART_SRC/claude" | cut -d' ' -f1)"
       if [ "$ACTUAL" != "$CHECKSUM" ]; then
@@ -52,12 +51,9 @@ parts:
         rm -f "$CRAFT_PART_SRC/claude"
         exit 1
       fi
-
-      chmod 755 $CRAFT_PART_SRC/claude
-
       echo "Checksum OK."
     override-build: |
-      install -Dm755 "$CRAFT_PART_SRC/claude" "$CRAFT_PRIME/bin/claude"
+      install -Dm755 "$CRAFT_PART_SRC/claude" "$CRAFT_PART_INSTALL/bin/claude"
 
   workshop-prompt:
     plugin: dump
