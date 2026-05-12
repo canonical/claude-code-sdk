@@ -10,8 +10,11 @@ license: https://www.anthropic.com/legal/commercial-terms
 build-base: ubuntu@24.04
 platforms:
   amd64:
-    build-on: [amd64]
+    build-on: [amd64, arm64]
     build-for: [amd64]
+  arm64:
+    build-on: [amd64, arm64]
+    build-for: [arm64]
 
 plugs:
   claude-config:
@@ -29,7 +32,12 @@ parts:
       VERSION="$(cat "$CRAFT_PROJECT_DIR/VERSION")"
       craftctl set version="$VERSION"
       DOWNLOAD_BASE_URL="https://downloads.claude.ai/claude-code-releases"
-      PLATFORM="linux-x64"
+
+      case "$CRAFT_ARCH_BUILD_FOR" in
+        amd64) PLATFORM="linux-x64" ;;
+        arm64) PLATFORM="linux-arm64" ;;
+        *) echo "Unsupported architecture: $CRAFT_ARCH_BUILD_FOR" >&2; exit 1 ;;
+      esac
 
       echo "Fetching manifest for version ${VERSION}, platform ${PLATFORM}..."
       MANIFEST="$(curl -fsSL "${DOWNLOAD_BASE_URL}/${VERSION}/manifest.json")"

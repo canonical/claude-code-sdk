@@ -19,7 +19,7 @@ jobs:
   build-and-upload:
     uses: canonical/sdkcraft-actions/.github/workflows/upload.yml@main
     with:
-      platforms: '["amd64"]'
+      platforms: '["amd64", "arm64"]'
       risk: "stable"
     secrets:
       SDKCRAFT_STORE_CREDENTIALS: ${{ secrets.SDKCRAFT_STORE_CREDENTIALS_PROD }}
