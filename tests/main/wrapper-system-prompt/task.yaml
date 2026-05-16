@@ -1,0 +1,23 @@
+summary: setup-base installs a claude wrapper that appends the workshop prompt
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  # The setup-base hook drops a profile script that defines a `claude` shell
+  # function which always passes --append-system-prompt pointing at the
+  # workshop prompt file.
+  workshop exec -- test -f /etc/profile.d/claude-code.sh
+  workshop exec -- grep -F -- "--append-system-prompt" /etc/profile.d/claude-code.sh
+  workshop exec -- grep -F -- "~/.claude/.workshop-prompt.md" /etc/profile.d/claude-code.sh
+
+  # In a login shell the wrapper should be a function, not the bare binary.
+  workshop exec -- bash -lc 'type claude' | MATCH "claude is a function"
+
+debug: |
+  workshop exec -- cat /etc/profile.d/claude-code.sh || true
+  workshop exec -- bash -lc 'type claude' || true

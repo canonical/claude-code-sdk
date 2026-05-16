@@ -1,0 +1,19 @@
+summary: setup-project hook installs the workshop prompt for Claude
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  # setup-project should drop the workshop-prompt.md into the workshop user's
+  # ~/.claude directory (which is also the mount target of the claude-config plug).
+  workshop exec -- test -f /home/workshop/.claude/.workshop-prompt.md
+  workshop exec -- head -1 /home/workshop/.claude/.workshop-prompt.md | \
+    MATCH "Workshop Container Environment Instructions"
+
+debug: |
+  workshop exec -- ls -la /home/workshop/.claude/ || true
+  workshop exec -- cat /home/workshop/.claude/.workshop-prompt.md || true

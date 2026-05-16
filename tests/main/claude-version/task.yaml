@@ -1,0 +1,16 @@
+summary: claude --version runs and reports a version
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  # Invoke through `command claude` to bypass the shell wrapper from setup-base
+  # (which would otherwise pass --append-system-prompt to `--version`).
+  workshop exec -- bash -lc 'claude --version' | MATCH "[0-9]+\.[0-9]+\.[0-9]+"
+
+debug: |
+  workshop exec -- bash -lc 'command claude --version' || true

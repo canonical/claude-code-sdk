@@ -1,0 +1,4 @@
+name: test-claude-code
+base: ${BASE}
+sdks:
+  - name: try-claude-code
