@@ -6,6 +6,12 @@
   "enabledManagers": [
     "custom.regex"
   ],
+  "customDatasources": {
+    "claude-code-stable": {
+      "defaultRegistryUrlTemplate": "https://downloads.claude.ai/claude-code-releases/stable",
+      "format": "plain"
+    }
+  },
   "customManagers": [
     {
       "customType": "regex",
@@ -16,9 +22,8 @@
         "(?<currentValue>[0-9.]+)"
       ],
       "depNameTemplate": "anthropics/claude-code",
-      "datasourceTemplate": "github-releases",
-      "versioningTemplate": "semver",
-      "extractVersionTemplate": "^v?(?<version>.+)$"
+      "datasourceTemplate": "custom.claude-code-stable",
+      "versioningTemplate": "semver"
     }
   ],
   "baseBranchPatterns": [
