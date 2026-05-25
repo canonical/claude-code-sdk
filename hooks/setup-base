@@ -2,6 +2,7 @@
 
 cat <<EOF >/etc/profile.d/claude-code.sh
 export PATH="${SDK}/bin:${SDK}/usr/bin:\$PATH"
+export CLAUDE_CONFIG_DIR=/home/workshop/.claude
 
 # Wrapper function to add default system prompt
 claude() {
