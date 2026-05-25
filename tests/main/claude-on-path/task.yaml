@@ -10,7 +10,7 @@ restore: |
 execute: |
   # `workshop exec` runs as the `workshop` user with a login shell,
   # which is what setup-base configures via /etc/profile.d/claude-code.sh.
-  workshop exec -- bash -lc 'command -v claude' | MATCH "^claude$"
+  workshop exec -- bash -lc 'command -v claude' | MATCH "/claude$"
 
 debug: |
   workshop exec -- bash -lc 'echo PATH=$PATH' || true
