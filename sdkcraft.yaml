@@ -7,7 +7,7 @@ description: |
   workshop. The agent is sandboxed in the workshop container. Credentials are
   persisted between workshop updates.
 license: https://www.anthropic.com/legal/commercial-terms
-build-base: ubuntu@26.04
+build-base: ubuntu@24.04
 platforms:
   amd64:
     build-on: [amd64, arm64]
