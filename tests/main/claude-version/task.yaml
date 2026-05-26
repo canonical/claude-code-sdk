@@ -8,7 +8,9 @@ restore: |
   workshop remove || true
 
 execute: |
-  workshop exec -- bash -lc 'claude --version' | MATCH "[0-9]+\.[0-9]+\.[0-9]+"
+  # Escape dots so MATCH treats the version literally, not as a regex.
+  EXPECTED_REGEX="${EXPECTED_VERSION//./\\.}"
+  workshop exec -- bash -lc 'claude --version' | MATCH "$EXPECTED_REGEX"
 
 debug: |
   workshop exec -- bash -lc 'claude --version' || true
