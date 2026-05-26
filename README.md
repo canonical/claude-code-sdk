@@ -93,7 +93,7 @@ This SDK doesn't define any slots.
 ## Documentation and guidance
 
 - [Claude Code official documentation](https://code.claude.com/docs)
-- [Workshop documentation](https://canonical-workshop.readthedocs-hosted.com/latest/)
+- [Workshop documentation](https://ubuntu.com/workshop/docs/)
 
 ---
 
@@ -101,7 +101,7 @@ This SDK doesn't define any slots.
 
 - Anthropic community: [Anthropic Discord](https://www.anthropic.com/discord)
 - Workshop forum:
-  [Workshop Discourse](https://discourse.canonical.com/c/engineering/workshops/34)
+  [Discourse](https://discourse.ubuntu.com/)
 - Please review our
   [Code of Conduct](https://ubuntu.com/community/ethos/code-of-conduct) before
   participating.
