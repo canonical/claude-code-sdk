@@ -7,6 +7,7 @@ description: |
   workshop. The agent is sandboxed in the workshop container. Credentials are
   persisted between workshop updates.
 license: https://www.anthropic.com/legal/commercial-terms
+website: https://github.com/canonical/claude-code-sdk
 build-base: ubuntu@24.04
 platforms:
   amd64:
