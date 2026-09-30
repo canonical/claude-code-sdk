@@ -5,6 +5,10 @@
 sdk_dir=$(dirname "$(dirname "$(readlink -f "$0")")")
 args=()
 
+# The SDK pins the Claude Code version. The native auto-updater would install
+# newer releases into ~/.local/bin, which ~/.profile puts ahead of this wrapper.
+export DISABLE_AUTOUPDATER="${DISABLE_AUTOUPDATER:-1}"
+
 if [[ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]]; then
   if token=$(workshopctl get-secret claude-code.oauth-token 2>/dev/null) && [[ -n "$token" ]]; then
     export CLAUDE_CODE_OAUTH_TOKEN="$token"

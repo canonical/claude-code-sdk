@@ -39,6 +39,8 @@ so interactive and non-interactive actions can use the YOLO mode.
    required; Claude Code works with any codebase.
 3. On launch, the SDK puts a `claude` wrapper on `PATH`
    and adds a system prompt hint about the workshop environment.
+   The SDK pins the Claude Code version, so the wrapper sets
+   `DISABLE_AUTOUPDATER=1` unless you set it yourself.
 
 ### Start a coding session
 
