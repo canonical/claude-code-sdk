@@ -79,6 +79,53 @@ you have these alternatives:
   or offer browser-based login on first interactive use.
   The mount plug persists these credentials between workshop updates.
 
+#### Use a subscription token from the host keyring
+
+1. On the host, create a long-lived token for your Claude subscription:
+
+   ```bash
+   claude setup-token
+   ```
+
+2. Store the token in the host keyring;
+   `secret-tool` prompts for it, so paste the token there:
+
+   ```bash
+   secret-tool store --label="claude code" --collection=default service claude-code
+   ```
+
+   To check that it's stored, run `secret-tool lookup service claude-code`.
+
+3. Expose the keyring item through a `secret` slot on the system SDK
+   in your workshop definition:
+
+   ```yaml
+   sdks:
+     - name: system
+       slots:
+         claude-oauth:
+           interface: secret
+           collection: default
+           attributes:
+             service: claude-code
+     - name: claude-code
+       channel: latest/stable
+   ```
+
+4. Once the workshop is launched, connect the slot to the `oauth-token` plug:
+
+   ```bash
+   workshop connect <workshop-name>/claude-code:oauth-token :claude-oauth
+   ```
+
+   The connection persists across `workshop refresh`;
+   repeat it after `workshop restore` or after removing and launching
+   the workshop again.
+   To disconnect, use `workshop disconnect` with the same plug.
+   To use an Anthropic Console API key instead,
+   store it with a different attribute value, add a second slot for it,
+   and connect that slot to `claude-code:api-key`.
+
 ---
 
 ## Plugs (resources this SDK consumes)
