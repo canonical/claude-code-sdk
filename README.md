@@ -37,8 +37,10 @@ so interactive and non-interactive actions can use the YOLO mode.
 1. No prerequisite SDKs are required.
 2. Place your project files in your project directory. No special layout is
    required; Claude Code works with any codebase.
-3. On launch, the SDK configures `PATH` for the `claude` binary
+3. On launch, the SDK puts a `claude` wrapper on `PATH`
    and adds a system prompt hint about the workshop environment.
+   The SDK pins the Claude Code version, so the wrapper sets
+   `DISABLE_AUTOUPDATER=1` unless you set it yourself.
 
 ### Start a coding session
 
@@ -54,16 +56,75 @@ Claude to read files, write code, run commands, and navigate your project.
 
 ### Authenticate with Claude
 
-To make your host Anthropic credentials available inside the workshop,
-you have two alternatives:
+Claude Code accepts a Claude subscription token created with `claude setup-token`
+(`CLAUDE_CODE_OAUTH_TOKEN`), an Anthropic Console API key (`ANTHROPIC_API_KEY`),
+or a bearer token for an LLM gateway (`ANTHROPIC_AUTH_TOKEN`).
 
-- Set the `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN` [environment variable](https://code.claude.com/docs/en/env-vars) inside the workshop.
+To make your credentials available inside the workshop,
+you have these alternatives:
+
+- Set one of these [environment variables](https://code.claude.com/docs/en/env-vars)
+  inside the workshop.
   You can pass it using the `--env` option with `workshop run` or `workshop exec`,
   or by other means such as [direnv](https://direnv.net/).
 
-- If neither variable is set, Claude Code will prompt for an Anthropic API key
+- Connect a secret to the `oauth-token` or `api-key` plug, or both;
+  see the plug descriptions below.
+  If both are available, Claude Code's own
+  [authentication precedence](https://code.claude.com/docs/en/iam#authentication-precedence)
+  decides which one it uses;
+  disconnect a plug to stop using its secret.
+
+- Otherwise, Claude Code will prompt for an Anthropic API key
   or offer browser-based login on first interactive use.
   The mount plug persists these credentials between workshop updates.
+
+#### Use a subscription token from the host keyring
+
+1. On the host, create a long-lived token for your Claude subscription:
+
+   ```bash
+   claude setup-token
+   ```
+
+2. Store the token in the host keyring;
+   `secret-tool` prompts for it, so paste the token there:
+
+   ```bash
+   secret-tool store --label="claude code" --collection=default service claude-code
+   ```
+
+   To check that it's stored, run `secret-tool lookup service claude-code`.
+
+3. Expose the keyring item through a `secret` slot on the system SDK
+   in your workshop definition:
+
+   ```yaml
+   sdks:
+     - name: system
+       slots:
+         claude-oauth:
+           interface: secret
+           collection: default
+           attributes:
+             service: claude-code
+     - name: claude-code
+       channel: latest/stable
+   ```
+
+4. Once the workshop is launched, connect the slot to the `oauth-token` plug:
+
+   ```bash
+   workshop connect <workshop-name>/claude-code:oauth-token :claude-oauth
+   ```
+
+   The connection persists across `workshop refresh`;
+   repeat it after `workshop restore` or after removing and launching
+   the workshop again.
+   To disconnect, use `workshop disconnect` with the same plug.
+   To use an Anthropic Console API key instead,
+   store it with a different attribute value, add a second slot for it,
+   and connect that slot to `claude-code:api-key`.
 
 ---
 
@@ -83,6 +144,34 @@ you have two alternatives:
   workshop remount <workshop-name>/claude-code:claude-config ~/.claude
   workshop start <workshop-name>
   ```
+
+### `oauth-token`
+
+- Interface: `secret`
+- Purpose: Provides a Claude subscription token, created with `claude setup-token`,
+  from the host's secret service.
+  The `claude` wrapper reads it with `workshopctl get-secret claude-code.oauth-token`
+  and exports it as `CLAUDE_CODE_OAUTH_TOKEN` for the Claude Code process,
+  unless that variable is already set in the workshop environment.
+  Because interactive onboarding would otherwise ask for a browser login,
+  the wrapper also sets `hasCompletedOnboarding` in `~/.claude/.claude.json`
+  whenever `CLAUDE_CODE_OAUTH_TOKEN` is set.
+  Commands Claude Code runs inherit this variable unless you set
+  `CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1`.
+
+### `api-key`
+
+- Interface: `secret`
+- Purpose: Provides an Anthropic Console API key from the host's secret service.
+  When the secret is readable and `ANTHROPIC_API_KEY` isn't set,
+  the `claude` wrapper configures
+  [`apiKeyHelper`](https://code.claude.com/docs/en/settings-reference#apikeyhelper)
+  to run `workshopctl get-secret claude-code.api-key`,
+  so Claude Code fetches the key on demand and it never enters the environment
+  of commands Claude Code runs.
+  The wrapper passes this as the first `--settings` option;
+  if you pass your own `--settings`, it replaces the wrapper's,
+  and the API key secret isn't used.
 
 ## Slots (resources this SDK provides)
 
