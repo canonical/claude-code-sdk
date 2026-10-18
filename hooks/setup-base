@@ -1,7 +1,11 @@
 #!/usr/bin/bash
 
+# jq lets the claude wrapper update .claude.json
+apt-get update
+apt-get install -y jq
+
 cat <<EOF >/etc/profile.d/claude-code.sh
-export PATH="${SDK}/bin:${SDK}/usr/bin:\$PATH"
+export PATH="${SDK}/wrapper:\$PATH"
 export CLAUDE_CONFIG_DIR=/home/workshop/.claude
 
 # Wrapper function to add default system prompt
