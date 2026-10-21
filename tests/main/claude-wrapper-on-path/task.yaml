@@ -1,0 +1,17 @@
+summary: the claude wrapper, not the SDK's bin directory, is on $PATH
+
+prepare: |
+  envsubst '${BASE}' <workshop.yaml.in >workshop.yaml
+  workshop launch
+
+restore: |
+  workshop remove || true
+
+execute: |
+  # type -P ignores shell functions and resolves the executable on $PATH.
+  workshop exec -- bash -lc 'readlink -f "$(type -P claude)"' | MATCH "/wrapper/claude$"
+  workshop exec -- bash -lc 'claude --version' | MATCH "Claude Code"
+
+debug: |
+  workshop exec -- bash -lc 'echo PATH=$PATH' || true
+  workshop exec -- bash -lc 'type -a claude' || true

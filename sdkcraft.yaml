@@ -21,6 +21,10 @@ plugs:
   claude-config:
     interface: mount
     workshop-target: /home/workshop/.claude
+  oauth-token:
+    interface: secret
+  api-key:
+    interface: secret
 
 parts:
   claude-code:
@@ -67,6 +71,12 @@ parts:
       echo "Checksum OK."
     override-build: |
       install -Dm755 "$CRAFT_PART_SRC/claude" "$CRAFT_PRIME/bin/claude"
+
+  wrapper:
+    plugin: dump
+    source: wrapper
+    organize:
+      claude: wrapper/claude
 
   workshop-prompt:
     plugin: dump

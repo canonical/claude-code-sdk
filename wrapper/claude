@@ -1,0 +1,41 @@
+#!/usr/bin/bash
+# Runs Claude Code with its credentials from workshop secrets, if they are connected.
+# A variable already set in the environment takes precedence over its secret.
+
+sdk_dir=$(dirname "$(dirname "$(readlink -f "$0")")")
+args=()
+
+# The SDK pins the Claude Code version. The native auto-updater would install
+# newer releases into ~/.local/bin, which ~/.profile puts ahead of this wrapper.
+export DISABLE_AUTOUPDATER="${DISABLE_AUTOUPDATER:-1}"
+
+if [[ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]]; then
+  if token=$(workshopctl get-secret claude-code.oauth-token 2>/dev/null) && [[ -n "$token" ]]; then
+    export CLAUDE_CODE_OAUTH_TOKEN="$token"
+  fi
+  unset token
+fi
+
+# Interactive onboarding ignores CLAUDE_CODE_OAUTH_TOKEN and asks for a browser
+# login, so mark it complete when a token is available.
+if [[ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]]; then
+  config="${CLAUDE_CONFIG_DIR:-$HOME}/.claude.json"
+  if [[ ! -s "$config" ]]; then
+    printf '{"hasCompletedOnboarding": true}\n' >"$config"
+  elif [[ "$(jq -r '.hasCompletedOnboarding' "$config" 2>/dev/null)" != true ]]; then
+    tmp=$(mktemp "$config.XXXXXX") &&
+      jq '.hasCompletedOnboarding = true' "$config" >"$tmp" &&
+      mv "$tmp" "$config" || rm -f "$tmp"
+  fi
+fi
+
+# The API key is fetched on demand by apiKeyHelper, so it never enters the
+# environment of commands Claude Code runs. Only set the helper when the secret
+# is readable; a failing helper would not fall back to other logins.
+if [[ -z "${ANTHROPIC_API_KEY:-}" ]] &&
+  workshopctl get-secret claude-code.api-key >/dev/null 2>&1; then
+  # A later --settings replaces this one, so users can still pass their own.
+  args=(--settings '{"apiKeyHelper": "workshopctl get-secret claude-code.api-key"}')
+fi
+
+exec "$sdk_dir/bin/claude" "${args[@]}" "$@"
